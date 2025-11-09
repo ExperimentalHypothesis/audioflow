@@ -1,0 +1,16 @@
+[project]
+name = "audioflow"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "mutagen>=1.47.0",
+    "typer>=0.12.3",
+]
+
+[project.scripts]
+audioflow = "audioflow.main:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
