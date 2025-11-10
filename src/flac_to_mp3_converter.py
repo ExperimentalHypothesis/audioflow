@@ -1,18 +1,27 @@
 from pathlib import Path
 import subprocess
+from .config import CLEANED_FLAC_PATH, CLEANED_MP3_PATH
 
 class FlacToMp3Converter:
     def __init__(self, bitrate: str):
         self.bitrate = bitrate
 
-    def convert(self, input_path: Path, output_root_path: Path):
+    def convert(self, input_path: Path):
         """
         Converts all FLAC files in the input_path (recursively) to MP3,
-        preserving the directory structure in the output_root_path.
+        mirroring the directory structure from CLEANED_FLAC_PATH to CLEANED_MP3_PATH.
         """
         if not input_path.exists():
             print(f"Error: Input path '{input_path}' does not exist.")
             return
+
+        try:
+            relative_path = input_path.relative_to(CLEANED_FLAC_PATH)
+        except ValueError:
+            print(f"Error: Input path '{input_path}' is not within the CLEANED_FLAC_PATH.")
+            return
+
+        output_root_path = CLEANED_MP3_PATH / relative_path
 
         if input_path.is_file() and input_path.suffix.lower() == ".flac":
             # Handle single FLAC file conversion
@@ -49,9 +58,15 @@ class FlacToMp3Converter:
             command = [
                 "ffmpeg",
                 "-i", str(flac_file),
-                "-b:a", self.bitrate, # Target bitrate
-                str(mp3_file)
+                "-codec:a", "libmp3lame",
             ]
+
+            if self.bitrate.upper() == "V0":
+                command.extend(["-q:a", "0"])
+            else:
+                command.extend(["-b:a", self.bitrate])
+            
+            command.append(str(mp3_file))
             
             # Run ffmpeg command
             result = subprocess.run(command, capture_output=True, text=True, check=True)

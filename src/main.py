@@ -25,7 +25,6 @@ def process_downloads():
 @app.command()
 def convert_to_mp3(
     album_path: Path,
-    output_path: Path,
     bitrate: str = typer.Option(
         config.MP3_BITRATE,
         "--bitrate",
@@ -37,7 +36,7 @@ def convert_to_mp3(
     Converts a FLAC album to MP3.
     """
     converter = FlacToMp3Converter(bitrate=bitrate)
-    converter.convert(album_path, output_path)
+    converter.convert(album_path)
 
 
 if __name__ == "__main__":
