@@ -1,7 +1,9 @@
 import typer
+from pathlib import Path
 from . import config
 from .soulseek_cronjob import SoulseekCronjob
 from .album_cleaner import AlbumCleaner
+from .flac_to_mp3_converter import FlacToMp3Converter
 
 app = typer.Typer()
 
@@ -18,6 +20,24 @@ def process_downloads():
         cleaner=cleaner,
     )
     cronjob.process_completed_downloads()
+
+
+@app.command()
+def convert_to_mp3(
+    album_path: Path,
+    output_path: Path,
+    bitrate: str = typer.Option(
+        config.MP3_BITRATE,
+        "--bitrate",
+        "-b",
+        help="The bitrate for the MP3 files (e.g., '320k').",
+    ),
+):
+    """
+    Converts a FLAC album to MP3.
+    """
+    converter = FlacToMp3Converter(bitrate=bitrate)
+    converter.convert(album_path, output_path)
 
 
 if __name__ == "__main__":
