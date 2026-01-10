@@ -1,9 +1,10 @@
 import typer
 from pathlib import Path
-from . import config
-from .soulseek_cronjob import SoulseekCronjob
-from .album_cleaner import AlbumCleaner
-from .flac_to_mp3_converter import FlacToMp3Converter
+
+import config
+from album_cleaner import AlbumCleaner
+from flac_to_mp3_converter import FlacToMp3Converter
+from soulseek_cronjob import SoulseekCronjob
 
 app = typer.Typer()
 

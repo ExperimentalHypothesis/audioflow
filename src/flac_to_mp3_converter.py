@@ -1,6 +1,8 @@
 from pathlib import Path
 import subprocess
-from .config import CLEANED_FLAC_PATH, CLEANED_MP3_PATH
+
+from config import CLEANED_FLAC_PATH, CLEANED_MP3_PATH
+
 
 class FlacToMp3Converter:
     def __init__(self, bitrate: str):

@@ -1,5 +1,7 @@
 from pathlib import Path
-from .album_cleaner import AlbumCleaner
+
+from album_cleaner import AlbumCleaner
+
 
 class SoulseekCronjob:
     def __init__(self, complete_folder: Path, downloading_folder: Path, cleaner: AlbumCleaner):
