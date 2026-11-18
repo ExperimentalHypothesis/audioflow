@@ -82,6 +82,38 @@ uv run python src/main.py convert-to-mp3 --album-path "/path/to/your/Cleaned/FLA
 -   `--album-path`: The path to the FLAC album (or directory) you want to convert. This path should ideally be within your `CLEANED_FLAC_PATH`.
 -   `--bitrate`: (Optional) Specify the MP3 bitrate. Defaults to `320k`. You can also use `"V0"` for variable bitrate.
 
+### 5. Copy Albums to the NAS
+
+Copies albums from any folder (a whole library, an artist folder or a single album) to the NAS, sorted the same way as the music already there: `Music/<Letter>/<Artist>/<Album>`, compilations in `Music/VA/<Album>`. The artist comes from the tags (album artist first), or from the parent folder name when there are no tags. Existing NAS folders that differ only in case are reused.
+
+An album is the same as one on the NAS when the folder names match after dropping a leading year and bracketed format/bitrate/disc tags (`2007 - Forgotten Rituals [Flac]` = `Forgotten Rituals`). FLAC always wins, an album never ends up on the NAS twice, and an album already on the NAS is never merged into (track names differ between sources, so merging duplicates tracks):
+
+| Source | On the NAS | Result |
+|---|---|---|
+| any | not there | Copied. |
+| FLAC | MP3 (or another lossy format) | FLAC is copied, then the lossy files (or the whole lossy folder, if it's named differently) are deleted. Nothing is deleted if the copy fails. Asks first, unless `--yes`. |
+| any | same or better format | Skipped, the NAS stays as it is. |
+
+The share (`NAS_SMB_URL`) is mounted automatically at `NAS_MOUNT_PATH` if it isn't mounted yet (or mount it in Finder with ⌘K). Configure it in `src/config.py`.
+
+```bash
+uv run python main.py sync-to-nas "~/Music/Cleaned FLAC" --dry-run  # show what would be copied/deleted
+uv run python main.py sync-to-nas "~/Music/Cleaned FLAC" "~/Music/Cleaned MP3"
+uv run python main.py sync-to-nas "~/Music/Cleaned FLAC" --move  # then move them on the Mac to the Trash
+```
+
+With `--move`, an album on the Mac goes to the Trash once it's safely on the NAS: after a copy only if every file is on the NAS with the same size, and right away if it was skipped as already on the NAS. Albums that failed or whose artist is unknown stay. Artist folders left empty are removed. Needs macOS 15+ (`/usr/bin/trash`).
+
+After the copy, Plex (running on the NAS) rescans the artist folders that changed, so new albums show up right away. It needs the Plex token in a git-ignored `.env` file in the project root:
+
+```bash
+PLEX_TOKEN=...   # Plex Web: any track → ⋯ → Get Info → View XML, the X-Plex-Token in the URL
+```
+
+The library section and paths are in `src/config.py` (`PLEX_*`). To rescan by hand: `audioflow plex-scan` (whole library) or `audioflow plex-scan "/Volumes/Public/Music/O/Oophoi"`.
+
+An interrupted copy resumes on the next run: albums are copied into a hidden `.<Album>.partial` folder and renamed when complete. Audio files lying next to album folders (e.g. in the root of a downloads folder) are reported and left alone.
+
 ## Development
 
 ### Running Tests
